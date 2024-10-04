@@ -3,7 +3,7 @@ A simple terminal node.js based multiplayer game.
 
 ![WormRacer Game](wormracer.png)
 
-This game is a different version of a classic game, where players control "worms". They collect food. Also Players try to lure each other into their tail, creating strategic gameplay mechanics.
+This game is a different version of a classic game, where players control "worms" to collect food. Also Players try to lure each other into their tail, creating strategic gameplay mechanics.
 
 ## Table of Contents
 1. [Gameplay](#gameplay)
