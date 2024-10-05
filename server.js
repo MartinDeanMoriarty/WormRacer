@@ -235,14 +235,14 @@ function runUpdate() {
     io.sockets.emit('hostMessage', config.startMessage); // Send  message to all clients      
     io.sockets.emit('gameState', isRunning);// This would start the game 
     console.log(`\n${config.runningMessage}`);
-    // We use this interval with 16ms delay for update game data
+    // We use this interval with serverUpdateSpeed/ms delay for update game data
     const intervalId = setInterval(() => {
         if (isRunning) {
             broadcast(generateSyncData());
         } else {
             clearInterval(intervalId);
         }
-    }, 16);
+    }, config.serverUpdateSpeed);
 }
 
 // Checks for arguments and starts a server

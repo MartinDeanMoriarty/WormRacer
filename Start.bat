@@ -5,6 +5,7 @@ echo Please select an option:
 echo 1: Start server
 echo 2: Start server and client
 echo 3: Start client
+echo 4: Start cpu client
 set /p choice= Your choice:
 
 :: Handle user input
@@ -29,6 +30,9 @@ if "%choice%"=="1" (
 ) else if "%choice%"=="3" (
     set /p argument= Enter IP:Port or leave empty for default: 
     node client.js !argument!
+) else if "%choice%"=="4" (
+    set /p argument= Enter IP:Port or leave empty for default: 
+    node cpuClient.js !argument!
 ) else (
     echo Invalid choice. Please run the script again and select a valid option.
 )

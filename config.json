@@ -1,6 +1,7 @@
 {
     "defaultIP": "127.0.0.1",
     "defaultPort": "35535",
+    "serverUpdateSpeed": 16,
     "serverMessage": "Server running on port",
     "clientConnectMessage": "A client connected",
     "clientDisconnectMessage": "A client disconnected",
@@ -21,6 +22,8 @@
     "client2StartPosY": 10,
     "client2StartDir": "right",
     "defaultIdentifier": "LazerRaceGamer",
+    "clientUpdateSpeed": 32,
+    "botUpdateSpeed": 128,
     "timeoutDuration": 10000,
     "connectMessage": "Connected to",
     "disconnectMessage": "Disconnected from server",
