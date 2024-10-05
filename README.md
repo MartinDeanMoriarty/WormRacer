@@ -22,7 +22,7 @@ Btw, collect as much food with your worm as you can. Only the tails do collide w
 ## <a name="installation"></a> Installation
 
 > [!NOTE]
-> Make sure you have Node.js installed: https://nodejs.org/
+> Make sure you have Node.js installed: https://nodejs.org/<br>
 > Clone the repository to your local machine or download packed file and extract it somewhere.
 
 To install the game, you have two options: 
