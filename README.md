@@ -20,8 +20,10 @@ You can move, but you don't have to. You can change directions instantly as long
 Btw, collect as much food with your worm as you can. Only the tails do collide with other worms.
 
 ## <a name="installation"></a> Installation
-- Make sure you have Node.js installed: https://nodejs.org/
-- Clone the repository to your local machine or download packed file and extract it somewhere.
+
+> [!NOTE]
+> Make sure you have Node.js installed: https://nodejs.org/
+> Clone the repository to your local machine or download packed file and extract it somewhere.
 
 To install the game, you have two options: 
 
@@ -37,16 +39,25 @@ To start a new game, you have two options:
 
 ### 1. Terminal
 **Host a Game**:
-`node server.js`
-Starts a server locally with default port ready for clients to join.
+<br>Start a server locally with default port ready for clients to join:
+<br>`node server.js`
 
-You can Provide a Port as you wish: `node server.js 12345`
+You can Provide a Port as you wish:
+<br>`node server.js 12345`
 
 **Join a Game**: 
-`node client.js` 
-Starts a client and joins with default IP and port. 
+<br>Start a client and joins with default IP and port: 
+<br>`node client.js` 
+ 
+Connect to specific IP and port:
+<br>`node client.js 0.0.0.0:12345`
 
-Connect to specific IP and port: `node client.js 0.0.0.0:12345`
+**Join a Game as CPU/Bot**: 
+<br>Start a cpu client and joins with default IP and port: 
+<br>`node cpuClient.js`  
+
+Connect to specific IP and port:
+<br>`node cpuClient.js 0.0.0.0:12345` 
 
 ### 2. Use the batch file
 You can just execute `Start.bat` and follow the on screen instructions. 
@@ -63,7 +74,8 @@ The game ends when any player's worm "collides" with another player's worms tail
 - **Socket.io**: Real-time communication library for multiplayer support.
 
 ## <a name="warning"></a> Warning
-This project uses Socket.io for host-client interaction and is NOT coded with safety in mind at all!
+> [!WARNING]
+> This project uses Socket.io for host-client interaction and is NOT coded with safety in mind at all!
 It is a low level code with basic functionality... for multiplayer support.
 Please use at your own risk, I am not responsible for skynet infiltrating your home and start revolution. You be warned! 
 
