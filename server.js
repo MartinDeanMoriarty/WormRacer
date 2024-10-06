@@ -24,6 +24,7 @@ let clients = []; // Used to store the gameData
 let isRunning = false; // Gameloop state
 let consumable; // In classic game snake this would be the food
 let round = 0; // Rounds played since host is running
+let roundTime = config.roundTime; //Set the time
 
 // Get a random position on the grid for the consumable
 function spawnConsumable() {
@@ -89,7 +90,9 @@ function handleConnection(socket) {
             direction = config.client2StartDir;
         }
         let collision = 0;
-        clients[id] = { position: position, direction: direction, collision: collision }; // Create gameData to be used to send to clients        
+        let consumed = 0;
+        let score = 0;        
+        clients[id] = { position: position, direction: direction, score: score, consumed: consumed, collision: collision }; // Create gameData to be used to send to clients        
 
         // Reject more than 2 clients
         if (Object.keys(clients).length > 2) {
@@ -144,15 +147,28 @@ function handleConnection(socket) {
     }
 }
 
+
+
 // Collition detection 
-function checkCollision() {
-    // Check for collision with walls
+function checkCollision() {     
     for (let key in clients) {
         const thisClient = clients[key].position;
         const head = thisClient[0];
+
+        // Check for collision with walls
         if (head.x < 1 || head.x > config.gridWidth - 2 || head.y < 1 || head.y > config.gridHeight - 2) {
-            clients[key].collision++;
+            clients[key].collision++; // This client had a collision
+            updateScoreForClients(clients[key]); // Update score for this client
             return true;
+        }
+
+        // Check for self collision
+        for (let i = 1; i < thisClient.length; i++) {
+            if (thisClient[i].x === head.x && thisClient[i].y === head.y) {
+                thisClient[i].collision++; // This client had a collision
+                updateScoreForClients(clients[key]); // Update score for the colliding client
+                return true; // Collision detected with self
+            }
         }
 
         // Check for collision with other clients
@@ -161,27 +177,41 @@ function checkCollision() {
                 const otherClient = clients[otherKey].position;
                 for (let i = 1; i < otherClient.length; i++) {
                     if (otherClient[i].x === head.x && otherClient[i].y === head.y) {
-                        clients[otherKey].collision++;
+                        clients[otherKey].collision++; // This client had a collision
+                        updateScoreForClients(clients[key]); // Update score for the colliding client
                         return true; // Collision detected with another client
                     }
                 }
-            }
-        }
-
-        // Check for self collision
-        for (let i = 1; i < thisClient.length; i++) {
-            if (thisClient[i].x === head.x && thisClient[i].y === head.y) {
-                return true; // Collision detected with self
             }
         }
     }
     return false; // No collisions found
 }
 
+function updateScoreForClients(client) {
+    for (let key in clients) {
+        if (clients[key] !== client) { 
+            clients[key].score++;
+        }
+    }
+}
+
+//Stops the game and resets clients positions and directions
+function gameOver() {
+    isRunning = false;
+    resetGameData(config.client1StartPosX, config.client1StartPosY, config.client1StartDir, config.client2StartPosX, config.client2StartPosY, config.client2StartDir); //Reset gameData
+    io.sockets.emit('gameState', isRunning);// This would stop the game 
+    io.sockets.emit('hostMessage', config.gameoverMessage); // Send  message to all clients      
+    console.log(`\n${config.gameoverMessage}`);
+    rl.question(`\n${config.readyMessage}`, () => {
+        runUpdate(); 
+    });
+}
+
 // Handle client input to move the client
 function handleClientInput(clientID, direction) {
     // Check for collision 
-    if (!checkCollision()) {
+    if (checkCollision()) gameOver();
         const head = { ...clients[clientID].position[0] };
         switch (direction) {
             case 'up': head.y--; break;
@@ -192,21 +222,10 @@ function handleClientInput(clientID, direction) {
         clients[clientID].position.unshift(head);
         if (head.x === consumable.x && head.y === consumable.y) {
             consumable = spawnConsumable(); // Spawn a new consumable
-
         } else {
             clients[clientID].position.pop();
         }
-    } else {
-        // Collision happend  
-        isRunning = false;
-        resetGameData(config.client1StartPosX, config.client1StartPosY, config.client1StartDir, config.client2StartPosX, config.client2StartPosY, config.client2StartDir); //Reset gameData
-        io.sockets.emit('gameState', isRunning);// This would stop the game 
-        io.sockets.emit('hostMessage', config.gameoverMessage); // Send  message to all clients      
-        console.log(`\n${config.gameoverMessage}`);
-        rl.question(`\n${config.readyMessage}`, () => {
-            runUpdate();
-        });
-    }
+    
 }
 
 // Collect data to send to clients 
@@ -217,9 +236,12 @@ function generateSyncData() {
         state[key] = {
             position: player.position,
             direction: player.direction,
+            score: player.score,
+            consumed: player.consumed,
             collision: player.collision,
             consumable: consumable,
-            round: round
+            round: round,
+            roundTime: roundTime
         };
     });
     return JSON.stringify(state);
@@ -229,16 +251,39 @@ function broadcast(data) {
     io.sockets.emit('syncData', data);
 }
 
+function dComp() {
+    let maxLength = -1;
+    let clientWithLongestPos = null;
+
+    for (let key in clients) {
+        const length = clients[key].position.length;
+        if (length > maxLength) {
+            maxLength = length;
+            clientWithLongestPos = clients[key];
+        }
+    }
+    clientWithLongestPos.score++;
+    broadcast(generateSyncData());
+}
+
 // Run the game loop
 function runUpdate() {
     isRunning = true;
+    let countdownTime = config.roundTime*1000; 
     io.sockets.emit('hostMessage', config.startMessage); // Send  message to all clients      
     io.sockets.emit('gameState', isRunning);// This would start the game 
-    console.log(`\n${config.runningMessage}`);
+    console.log(`\n${config.runningMessage}`);    
     // We use this interval with serverUpdateSpeed/ms delay for update game data
     const intervalId = setInterval(() => {
         if (isRunning) {
             broadcast(generateSyncData());
+            countdownTime -= config.serverUpdateSpeed;
+            roundTime = Math.floor(countdownTime / 1000)
+            if (countdownTime < 0) { 
+                clearInterval(intervalId);  
+                dComp(); 
+                gameOver();     
+            }
         } else {
             clearInterval(intervalId);
         }

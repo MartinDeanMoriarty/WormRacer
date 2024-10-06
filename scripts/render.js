@@ -62,37 +62,37 @@ function printAssetLines(content) {
 
 // Output game statistics
 function printGamestatLines(gameData, clientID) {
-    let gsClients;
-    let gsRounds;
+    let clientsScore;
+    let clientsRounds;   
 
     if (!gameData) { // Use a default at start
-        gsClients = ` ${client1Representation} = 0  ◄►  ${client2Representation} = 0`;
-        gsRounds = '0 ';
+        clientsScore = ` ${client1Representation} = 0  ◄►  ${client2Representation} = 0`;
+        clientsRounds = '0 ';
     } else {
         const state = JSON.parse(gameData); // Parse the JSON gameData from the server
-        let client1Collision = 0;
-        let client2Collision = 0;
+        let client1Score = 0;
+        let client2Score = 0;
 
-        // Set collisions/scores
+        // Set scores
         for (const player of Object.keys(state)) { // Iterate over all players
             if (player === clientID) {
-                client1Collision = state[player].collision || 0;
+                client1Score = state[player].score || 0;
             } else {
-                client2Collision = state[player].collision || 0;
+                client2Score = state[player].score || 0;
             }
         }
-        // A collision by client2 is a point for client1 
-        gsClients = ` ${client1Representation} = ${client2Collision}  ◄►  ${client2Representation} = ${client1Collision}`;
-        gsRounds = `${state[clientID].round} `;
+        // 
+        clientsScore = ` ${client1Representation} = ${client1Score}  ◄►  ${client2Representation} = ${client2Score}`;
+        clientsRounds = `${state[clientID].roundTime} : ${state[clientID].round} `;
     }
     const borderLength = config.gridWidth; // Fixed width for the border
     // Build and calculate
     let boarderLine = `${titleBorderRepresentation.repeat(borderLength)}`;
-    let tmpGs = `${gsClients}${gsRounds}`;
+    let tmpGs = `${clientsScore}${clientsRounds}`;
     const gsLength = tmpGs.length;
     const spaceCountGs = Math.floor((borderLength - gsLength) - 2);
     const middleGsSpaces = ' '.repeat(spaceCountGs);
-    let gamestatsLines = `${titleBorderRepresentation}${gsClients}${middleGsSpaces}${gsRounds}${titleBorderRepresentation}\n${boarderLine}`;
+    let gamestatsLines = `${titleBorderRepresentation}${clientsScore}${middleGsSpaces}${clientsRounds}${titleBorderRepresentation}\n${boarderLine}`;
     // Output
     console.log(gamestatsLines);
 }

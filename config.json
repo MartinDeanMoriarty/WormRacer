@@ -13,6 +13,7 @@
     "runningMessage": "Game is running!",
     "gameoverMessage": "Game Over! Press Enter to replay ",
     "clientMessage": "Waiting for second client... ",
+    "roundTime": 120,
     "gridHeight": 20,
     "gridWidth": 80,
     "client1StartPosX": 10,
