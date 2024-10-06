@@ -22,7 +22,7 @@
     "client2StartPosX": 20,
     "client2StartPosY": 10,
     "client2StartDir": "right",
-    "defaultIdentifier": "LazerRaceGamer",
+    "defaultIdentifier": "WormRacerGamer",
     "clientUpdateSpeed": 32,
     "botUpdateSpeed": 128,
     "timeoutDuration": 10000,
