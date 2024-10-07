@@ -18,8 +18,9 @@ stdin.setRawMode(true);
 
 const args = minimist(process.argv.slice(2)); //Arguments handling 
 const config = JSON.parse(fs.readFileSync('config.json', 'utf8')); // Load configuration file
+const textAsset = JSON.parse(fs.readFileSync('./assets/text.json', 'utf8')); // Load text asset
 
-let clientMessage = config.clientMessage; //To display host messages
+let clientMessage = textAsset.clientMessage; //To display host messages
 let client; // Client
 let clientID; // This will store the clients id from the server
 let gameData; // This will store the latest game data received from the server
@@ -33,7 +34,7 @@ function runUpdate() {
             //"Render" the game scnene             
             render.game(gameData, clientID);
         } else {
-            let topLeft = config.titleMessage;
+            let topLeft = textAsset.titleMessage;
             let middleCenter = "";
             let bottomRight = clientMessage;
             // "Render" the title scene             
@@ -65,7 +66,7 @@ function initClient(ip, port) {
     return new Promise((resolve, reject) => {
         const timeoutPromise = new Promise((_, reject) => {
             setTimeout(() => {
-                reject(new Error(config.timeoutMessage));
+                reject(new Error(textAsset.timeoutMessage));
             }, config.timeoutDuration);
         });
         // Make sure the client is initialiazid and ready to do shi...
@@ -84,7 +85,7 @@ function initClient(ip, port) {
                 });
                 // Hanlde disconnect
                 socket.on('disconnect', () => {
-                    reject(new Error(config.disconnectMessage));
+                    reject(new Error(textAsset.disconnectMessage));
                 });
                 // Handle client id synchnonisation
                 socket.on('syncID', (id) => {
@@ -106,13 +107,13 @@ function initClient(ip, port) {
             timeoutPromise
         ]).then((socket) => {
             // Client is ready to do shi....
-            console.log(`\n${config.connectMessage} IP: ${ip}, Port: ${port}`);
+            console.log(`\n${textAsset.connectMessage} IP: ${ip}, Port: ${port}`);
             resolve(socket);
             handleInput(); // Start to handle input  
             runUpdate(); // Run the game loop            
         }).catch((error) => {
             reject(error); // Timeout  
-            functions.processPrompt(stdin, process, rl,'exit', `\n${config.exitMessage}`);
+            functions.processPrompt(stdin, process, rl,'exit', `\n${textAsset.exitMessage}`);
         });
     });
 } 
@@ -129,8 +130,8 @@ async function start() {
             ip = joinParts[0];
             port = parseInt(joinParts[1], 10); // Ensure the port is a number
         } else {
-            console.error(`\n${config.clientArgumentsMessage}`); // Syntax error
-            functions.processPrompt(stdin, process, rl,'exit', `\n${config.exitMessage}`);
+            console.error(`\n${textAsset.clientArgumentsMessage}`); // Syntax error
+            functions.processPrompt(stdin, process, rl,'exit', `\n${textAsset.exitMessage}`);
             //return;
         }
     }
@@ -138,8 +139,8 @@ async function start() {
     try {
         client = await initClient(ip, port); // Initialize a client    
     } catch (error) {
-        console.error(`\n${config.clientArgumentsMessage}: ${error.message}`); // Some unhandled error
-        functions.processPrompt(stdin, process, rl,'exit', `\n${config.exitMessage}`);
+        console.error(`\n${textAsset.clientArgumentsMessage}: ${error.message}`); // Some unhandled error
+        functions.processPrompt(stdin, process, rl,'exit', `\n${textAsset.exitMessage}`);
     }
 }
 start();

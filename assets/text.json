@@ -1,0 +1,23 @@
+{
+    "serverMessage": "Server running on port",
+    "clientConnectMessage": "A client connected",
+    "clientDisconnectMessage": "A client disconnected",
+    "clientDisallowMessage": "A client was rejected: Incorrect identifier",
+    "maxClinetsMessage": "Max number of clients reached. Rejecting new connection from ID",
+    "serverArgumentsMessage": "Please use node server.js [Port]",
+    "clientsConnectedMessage": " Connected",
+    "readyMessage": "Ready to play! Press Enter ",
+    "startMessage": "Starting game...",
+    "runningMessage": "Game is running!",
+    "gameoverMessage": "Game Over! Press Enter to replay ",
+    "clientMessage": "Waiting for client... ",
+    "connectMessage": "Connected to",
+    "disconnectMessage": "Disconnected from server",
+    "timeoutMessage": "Connection timed out",
+    "errorMessage": "Error connecting to server",
+    "clientArgumentsMessage": "Please use node client.js IP:Port",
+    "titleMessage": " Welcome to",
+    "exitMessage": "Press Enter to exit",
+    "assetErrorMessage": "Error loading asset",    
+    "promtErrorMessage": "Invalid action specified"
+}

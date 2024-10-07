@@ -18,6 +18,7 @@ stdin.setRawMode(true);
 
 const args = minimist(process.argv.slice(2)); // Arguments handling 
 const config = JSON.parse(fs.readFileSync('config.json', 'utf8')); // Load configuration file
+const textAsset = JSON.parse(fs.readFileSync('./assets/text.json', 'utf8')); // Load 
 
 let serverHost; let io; // Server
 let clients = []; // Used to store the gameData
@@ -57,7 +58,7 @@ function initHost(port) {
         });
         // Listen and handle
         serverHost.listen(port, () => {
-            console.log(`\n${config.serverMessage} ${port}`);
+            console.log(`\n${textAsset.serverMessage} ${port}`);
             io.on('connection', handleConnection);
             resolve({ serverHost, io });
         });
@@ -81,14 +82,14 @@ function handleConnection(socket) {
 
         // Reject clients more than predefined in config.json
         if (Object.keys(clients).length > config.maxClients) {
-            console.log(`\n${config.maxClinetsMessage} : ${id}`); // Log to host
+            console.log(`\n${textAsset.maxClinetsMessage} : ${id}`); // Log to host
             socket.disconnect();
             return;
         }
 
-        console.log(`\n${config.clientConnectMessage} : ${id}`); // Log message to server console
+        console.log(`\n${textAsset.clientConnectMessage} : ${id}`); // Log message to server console
         socket.emit('syncID', id); // Send the id to newly connected client
-        let hostMessage = `${config.clientMessage}`;
+        let hostMessage = `${textAsset.clientMessage}`;
         socket.emit('hostMessage', hostMessage);  // Broadcast welcome message to the newly connected client 
 
         // Setup listeners
@@ -97,17 +98,17 @@ function handleConnection(socket) {
         });
 
         socket.on('disconnect', () => {
-            console.log(`\n${config.clientDisconnectMessage} : ${id}`); // Log disconnect to host
+            console.log(`\n${textAsset.clientDisconnectMessage} : ${id}`); // Log disconnect to host
             delete clients[id];
             isRunning = false;
             io.sockets.emit('gameState', isRunning); // This stops the game for clients still connected
-            io.sockets.emit('hostMessage', `${config.clientDisconnectMessage} - ${config.clientMessage}`); //Send client disconnect to all clients
+            io.sockets.emit('hostMessage', `${textAsset.clientDisconnectMessage} - ${textAsset.clientMessage}`); //Send client disconnect to all clients
         });
 
         // Clients have control over game start/restart
         socket.on('startGame', () => {
             // Check the number of connected clients using Object keys length
-            if (Object.keys(clients).length > config.minClients) {
+            if (Object.keys(clients).length >= config.minClients) {
                 socket.emit('syncData', generateSyncData()); // Send data to all clients        
                 runUpdate();
                 round++;
@@ -115,10 +116,10 @@ function handleConnection(socket) {
         });
 
         // Check the number of connected clients using Object keys length
-        if (Object.keys(clients).length > config.minClients) {            
-            io.sockets.emit('hostMessage', `${clientsConnectedMessage}: ${Object.keys(clients).length} : ${config.readyMessage}`); // Emit readyMessage if 2 clients are connected
+        if (Object.keys(clients).length >= config.minClients) {            
+            io.sockets.emit('hostMessage', `${textAsset.clientsConnectedMessage}: ${Object.keys(clients).length} : ${textAsset.readyMessage}`); // Emit readyMessage if minClients are connected
             // The server can have control over the game start too
-            //rl.question(`\n${config.readyMessage}`, () => {
+            //rl.question(`\n${textAsset.readyMessage}`, () => {
             //    socket.emit('syncData', generateSyncData()); // Send data to all clients        
             //    runUpdate();
             //    round++;
@@ -127,7 +128,7 @@ function handleConnection(socket) {
 
     } else {
         // Disallow the connection
-        console.log(`\n${config.clientDisallowMessage}`);
+        console.log(`\n${textAsset.clientDisallowMessage}`);
         socket.disconnect();
     }
 }
@@ -184,9 +185,9 @@ function gameOver() {
     isRunning = false;
     resetGameData(config.clientsStartPosX, config.clientsStartPosY, config.clientsStartDir); //Reset gameData
     io.sockets.emit('gameState', isRunning);// This would stop the game 
-    io.sockets.emit('hostMessage', config.gameoverMessage); // Send  message to all clients      
-    console.log(`\n${config.gameoverMessage}`);
-    rl.question(`\n${config.readyMessage}`, () => {
+    io.sockets.emit('hostMessage', textAsset.gameoverMessage); // Send  message to all clients      
+    console.log(`\n${textAsset.gameoverMessage}`);
+    rl.question(`\n${textAsset.readyMessage}`, () => {
         runUpdate(); 
     });
 }
@@ -252,12 +253,12 @@ function dComp() {
 function runUpdate() {
     isRunning = true;
     let countdownTime = config.roundTime*1000; 
-    io.sockets.emit('hostMessage', config.startMessage); // Send  message to all clients      
+    io.sockets.emit('hostMessage', textAsset.startMessage); // Send  message to all clients      
     io.sockets.emit('gameState', isRunning);// This would start the game 
-    console.log(`\n${config.runningMessage}`);    
+    console.log(`\n${textAsset.runningMessage}`);    
     // We use this interval with serverUpdateSpeed/ms delay for update game data
     const intervalId = setInterval(() => {
-        if (isRunning) {
+        if (isRunning) {           
             broadcast(generateSyncData());
             countdownTime -= config.serverUpdateSpeed;
             roundTime = Math.floor(countdownTime / 1000)
@@ -283,7 +284,7 @@ async function start() {
         const serverData = await initHost(port);
         global.serverHost = serverData.server;
     } catch (error) {
-        console.error(`\n${config.serverArgumentsMessage} : ${error.message}`); // Some unhandled error       
+        console.error(`\n${textAsset.serverArgumentsMessage} : ${error.message}`); // Some unhandled error       
     }
 }
 start();

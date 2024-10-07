@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 const config = JSON.parse(fs.readFileSync('config.json', 'utf8')); // Load configuration file
+const textAsset = JSON.parse(fs.readFileSync('./assets/text.json', 'utf8')); // Load text asset
 
 // For game assets
 let client1Representation;
@@ -46,7 +47,7 @@ export async function loadAssets() {
             logoLines
         ] = results;
     } catch (error) {
-        console.error(`${config.assetErrorMessage} : ${error}`);
+        console.error(`${textAsset.assetErrorMessage} : ${error}`);
     }
 }
 

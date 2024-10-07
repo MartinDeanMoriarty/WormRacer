@@ -1,5 +1,5 @@
 import fs from 'fs';
-const config = JSON.parse(fs.readFileSync('config.json', 'utf8')); // Load configuration file
+const textAsset = JSON.parse(fs.readFileSync('./assets/text.json', 'utf8')); // Load text asset
 
 // Generate NOT SO UNIQUE identifier
 export function generateUniqueIdentifier(clientIdent) {    
@@ -22,7 +22,7 @@ export function processPrompt(stdin, process, rl, action, text) {
             });
             break;
         default:
-            console.log(`\n${config.promtErrorMessage}`); 
+            console.log(`\n${textAsset.promtErrorMessage}`); 
     }
 }
 
