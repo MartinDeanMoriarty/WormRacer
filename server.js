@@ -86,10 +86,11 @@ function handleConnection(socket) {
             socket.disconnect();
             return;
         }
-
+        
+        let clientsConnected = `${textAsset.clientsConnectedMessage}: ${Object.keys(clients).length} ♦ `;
         console.log(`\n${textAsset.clientConnectMessage} : ${id}`); // Log message to server console
         socket.emit('syncID', id); // Send the id to newly connected client
-        let hostMessage = `${textAsset.clientMessage}`;
+        let hostMessage = `${clientsConnected}${textAsset.clientMessage}`;
         socket.emit('hostMessage', hostMessage);  // Broadcast welcome message to the newly connected client 
 
         // Setup listeners
@@ -102,7 +103,8 @@ function handleConnection(socket) {
             delete clients[id];
             isRunning = false;
             io.sockets.emit('gameState', isRunning); // This stops the game for clients still connected
-            io.sockets.emit('hostMessage', `${textAsset.clientDisconnectMessage} - ${textAsset.clientMessage}`); //Send client disconnect to all clients
+            clientsConnected = `${textAsset.clientsConnectedMessage}: ${Object.keys(clients).length} ♦ `;
+            io.sockets.emit('hostMessage', `${clientsConnected}${textAsset.clientDisconnectMessage} - ${textAsset.clientMessage}`); //Send client disconnect to all clients
         });
 
         // Clients have control over game start/restart
@@ -117,7 +119,7 @@ function handleConnection(socket) {
 
         // Check the number of connected clients using Object keys length
         if (Object.keys(clients).length >= config.minClients) {            
-            io.sockets.emit('hostMessage', `${textAsset.clientsConnectedMessage}: ${Object.keys(clients).length} : ${textAsset.readyMessage}`); // Emit readyMessage if minClients are connected
+            io.sockets.emit('hostMessage', `${clientsConnected}${textAsset.readyMessage}`); // Emit readyMessage if minClients are connected
             // The server can have control over the game start too
             //rl.question(`\n${textAsset.readyMessage}`, () => {
             //    socket.emit('syncData', generateSyncData()); // Send data to all clients        
@@ -172,10 +174,11 @@ function checkCollision() {
     return false; // No collisions found
 }
 
+//Helper function for checkCollision() to update clients scores
 function updateScoreForClients(client) {
     for (let key in clients) {
         if (clients[key] !== client) { 
-            clients[key].score++;
+            clients[key].score++; // Add a point to score
         }
     }
 }
@@ -185,7 +188,8 @@ function gameOver() {
     isRunning = false;
     resetGameData(config.clientsStartPosX, config.clientsStartPosY, config.clientsStartDir); //Reset gameData
     io.sockets.emit('gameState', isRunning);// This would stop the game 
-    io.sockets.emit('hostMessage', textAsset.gameoverMessage); // Send  message to all clients      
+    let clientsConnected = `${textAsset.clientsConnectedMessage}: ${Object.keys(clients).length} ♦ `;
+    io.sockets.emit('hostMessage', `${clientsConnected}${textAsset.gameoverMessage}`); // Send  message to all clients      
     console.log(`\n${textAsset.gameoverMessage}`);
     rl.question(`\n${textAsset.readyMessage}`, () => {
         runUpdate(); 
@@ -234,6 +238,7 @@ function broadcast(data) {
     io.sockets.emit('syncData', data);
 }
 
+// Compares who has the longest
 function dComp() {
     let maxLength = -1;
     let clientWithLongestPos = null;
@@ -245,26 +250,26 @@ function dComp() {
             clientWithLongestPos = clients[key];
         }
     }
-    clientWithLongestPos.score++;
-    broadcast(generateSyncData());
+    clientWithLongestPos.score++; // Add a point to score
+    broadcast(generateSyncData()); // Update gameData
 }
 
 // Run the game loop
 function runUpdate() {
     isRunning = true;
-    let countdownTime = config.roundTime*1000; 
-    io.sockets.emit('hostMessage', textAsset.startMessage); // Send  message to all clients      
+    let countdownTime = config.roundTime*1000; // Seconds to milliseconds -Resets the timer 
+    //io.sockets.emit('hostMessage', ${textAsset.runningMessage}); // Send  message to all clients      
     io.sockets.emit('gameState', isRunning);// This would start the game 
     console.log(`\n${textAsset.runningMessage}`);    
     // We use this interval with serverUpdateSpeed/ms delay for update game data
     const intervalId = setInterval(() => {
         if (isRunning) {           
             broadcast(generateSyncData());
-            countdownTime -= config.serverUpdateSpeed;
-            roundTime = Math.floor(countdownTime / 1000)
-            if (countdownTime < 0) { 
+            countdownTime -= config.serverUpdateSpeed; // Run timer
+            roundTime = Math.floor(countdownTime / 1000) // Milliseconds to seconds
+            if (countdownTime < 0) { // Time is up
                 clearInterval(intervalId);  
-                dComp(); 
+                dComp(); // Compare worm length
                 gameOver();     
             }
         } else {

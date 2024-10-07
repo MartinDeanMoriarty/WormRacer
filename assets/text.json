@@ -7,7 +7,6 @@
     "serverArgumentsMessage": "Please use node server.js [Port]",
     "clientsConnectedMessage": " Connected",
     "readyMessage": "Ready to play! Press Enter ",
-    "startMessage": "Starting game...",
     "runningMessage": "Game is running!",
     "gameoverMessage": "Game Over! Press Enter to replay ",
     "clientMessage": "Waiting for client... ",
