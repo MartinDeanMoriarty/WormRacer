@@ -66,8 +66,7 @@ You can just execute `Start.bat` and follow the on screen instructions.
 Use `arrow keys` to move your worm. Collect food and try to lure other clients into collisions by leading them towards your tail.
 
 ## <a name="conditions"></a> Conditions
-The server will wait for exactly two players to connect.
-The game ends when any player's worm "collides" with another player's worms tail, a wall or their own tail. After a collision, you will be prompted to start a new game.
+The server will wait for predefined number of clients to connect. The game ends when any player's worm "collides" with another player's worms tail, a wall or their own tail. After a collision, you will be prompted to start a new game.
 
 ## <a name="tech-stack"></a> Tech Stack
 - **Node.js**: Runtime environment for server-side code execution and for handling the client as well.
