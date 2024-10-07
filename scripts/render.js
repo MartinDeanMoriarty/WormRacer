@@ -62,27 +62,20 @@ function printAssetLines(content) {
 
 // Output game statistics
 function printGamestatLines(gameData, clientID) {
-    let clientsScore;
+    let clientsScore = ``;
     let clientsRounds;   
 
     if (!gameData) { // Use a default at start
-        clientsScore = ` ${client1Representation} = 0  ◄►  ${client2Representation} = 0`;
+        clientsScore = ``;
         clientsRounds = '0 ';
     } else {
-        const state = JSON.parse(gameData); // Parse the JSON gameData from the server
-        let client1Score = 0;
-        let client2Score = 0;
-
+        const state = JSON.parse(gameData); // Parse the JSON gameData from the server         
         // Set scores
         for (const player of Object.keys(state)) { // Iterate over all players
-            if (player === clientID) {
-                client1Score = state[player].score || 0;
-            } else {
-                client2Score = state[player].score || 0;
-            }
-        }
-        // 
-        clientsScore = ` ${client1Representation} = ${client1Score}  ◄►  ${client2Representation} = ${client2Score}`;
+            let clientScore = 0; 
+            clientScore = state[player].score || 0;
+            clientsScore += ` ► ${clientScore} ◄`;          
+        }  
         clientsRounds = `${state[clientID].roundTime} : ${state[clientID].round} `;
     }
     const borderLength = config.gridWidth; // Fixed width for the border

@@ -38,22 +38,12 @@ function spawnConsumable() {
 } 
 
 // Reset positions and directions for all clients
-function resetGameData(fst1, snd1, dir1, fst2, snd2, dir2) {
+function resetGameData(fst1, snd1, dir1) {
     const initialPosition = [{ x: 0, y: 0 }]; // Default position
     const leftDirection = 'left'; // Default direction
-    Object.keys(clients).forEach((clientID, index) => {
-        if (Object.keys(clients).length === 2) { // Check the number of entry
-            if (index === 0) { // If it's the first entry                            
-                clients[clientID].position = [{ x: fst1, y: snd1 }];
-                clients[clientID].direction = dir1;
-            } else if (index === 1) { // If it's the second entry                               
-                clients[clientID].position = [{ x: fst2, y: snd2 }];
-                clients[clientID].direction = dir2;
-            }
-        } else { // For more than 2 clients, you might want to handle this differently
-            clients[clientID].position = initialPosition;
-            clients[clientID].direction = leftDirection;
-        }
+    Object.keys(clients).forEach((clientID, index) => {                                         
+        clients[clientID].position = [{ x: fst1, y: snd1 }];
+        clients[clientID].direction = dir1; 
     });
 }
 
@@ -74,28 +64,23 @@ function initHost(port) {
     });
 }
 
-// Handle incomming connections 
-// With this setup the server expects 2 clients   
+// Handle incomming connections  
 function handleConnection(socket) {
     let id = socket.id;
     const clientIdentifier = socket.handshake.headers['client-identifier']; // Get the identifier from the handshake headers    
     if (config.defaultIdentifier.includes(clientIdentifier)) {
-
-        // Create player and direction for first client
-        let position = [{ x: config.client1StartPosX, y: config.client1StartPosY }];
-        let direction = config.client1StartDir;
-        // Create player and direction for second client 
-        if (Object.keys(clients).length == 1) {
-            position = [{ x: config.client2StartPosX, y: config.client2StartPosY }];
-            direction = config.client2StartDir;
-        }
+        // Create position and direction for clients
+        let tmpX = config.clientsStartPosX+Object.keys(clients).length;
+        let tmpY = config.clientsStartPosY+Object.keys(clients).length;         
+        let position = [{ x: tmpX, y: tmpY }];
+        let direction = config.clientsStartDir;      
         let collision = 0;
         let consumed = 0;
         let score = 0;        
         clients[id] = { position: position, direction: direction, score: score, consumed: consumed, collision: collision }; // Create gameData to be used to send to clients        
 
-        // Reject more than 2 clients
-        if (Object.keys(clients).length > 2) {
+        // Reject clients more than predefined in config.json
+        if (Object.keys(clients).length > config.maxClients) {
             console.log(`\n${config.maxClinetsMessage} : ${id}`); // Log to host
             socket.disconnect();
             return;
@@ -122,7 +107,7 @@ function handleConnection(socket) {
         // Clients have control over game start/restart
         socket.on('startGame', () => {
             // Check the number of connected clients using Object keys length
-            if (Object.keys(clients).length == 2) {
+            if (Object.keys(clients).length > config.minClients) {
                 socket.emit('syncData', generateSyncData()); // Send data to all clients        
                 runUpdate();
                 round++;
@@ -130,14 +115,14 @@ function handleConnection(socket) {
         });
 
         // Check the number of connected clients using Object keys length
-        if (Object.keys(clients).length > 1) {            
-            io.sockets.emit('hostMessage', `${config.readyMessage}`); // Emit readyMessage if 2 clients are connected
-            // The server console has control over the game start too
-            rl.question(`\n${config.readyMessage}`, () => {
-                socket.emit('syncData', generateSyncData()); // Send data to all clients        
-                runUpdate();
-                round++;
-            });
+        if (Object.keys(clients).length > config.minClients) {            
+            io.sockets.emit('hostMessage', `${clientsConnectedMessage}: ${Object.keys(clients).length} : ${config.readyMessage}`); // Emit readyMessage if 2 clients are connected
+            // The server can have control over the game start too
+            //rl.question(`\n${config.readyMessage}`, () => {
+            //    socket.emit('syncData', generateSyncData()); // Send data to all clients        
+            //    runUpdate();
+            //    round++;
+            //});
         }
 
     } else {
@@ -146,8 +131,6 @@ function handleConnection(socket) {
         socket.disconnect();
     }
 }
-
-
 
 // Collition detection 
 function checkCollision() {     
@@ -199,7 +182,7 @@ function updateScoreForClients(client) {
 //Stops the game and resets clients positions and directions
 function gameOver() {
     isRunning = false;
-    resetGameData(config.client1StartPosX, config.client1StartPosY, config.client1StartDir, config.client2StartPosX, config.client2StartPosY, config.client2StartDir); //Reset gameData
+    resetGameData(config.clientsStartPosX, config.clientsStartPosY, config.clientsStartDir); //Reset gameData
     io.sockets.emit('gameState', isRunning);// This would stop the game 
     io.sockets.emit('hostMessage', config.gameoverMessage); // Send  message to all clients      
     console.log(`\n${config.gameoverMessage}`);
@@ -224,8 +207,7 @@ function handleClientInput(clientID, direction) {
             consumable = spawnConsumable(); // Spawn a new consumable
         } else {
             clients[clientID].position.pop();
-        }
-    
+        }    
 }
 
 // Collect data to send to clients 
